@@ -14,27 +14,41 @@ function makeImage(context) {
 }
 
 function bootstrap() {
+  var video = document.getElementById('myVideo');
+  // OperaはgetUserMediaを使う
+  navigator.webkitGetUserMedia("audio, video", success, error);
+
+  function success(stream) {
+    console.log(stream);
+    video.src = window.webkitURL.createObjectURL(stream);
+  }
+
+  function error(err) {
+    console.log(err);
+  }
+
   var path = window.location.hostname + ':' + window.location.port;
 
   // 適当な図形を描画
   var c = document.getElementById('mycanvas');
   var ctx = c.getContext('2d');
-  ctx.globalalpha = 0.3;
+  ctx.drawImage(video, 0, 0);
+
   // Socketの初期化
   socket = new WebSocket('ws://' + path);
   socket.binaryType = 'arraybuffer';
   socket.onopen = function() {
     setInterval(function() {
-      makeImage(ctx);
+      ctx.drawImage(video, 0, 0, 200, 160);
       send(ctx);
-    }, 200);
+    }, 500);
   };
   socket.onmessage = handleReceive;
 };
 
 function send(ctx) {
   // RAWデータをそのまま送信
-  var data = ctx.getImageData(0, 0, 200, 200).data;
+  var data = ctx.getImageData(0, 0, 200, 160).data;
   var byteArray = new Uint8Array(data);
   socket.send(byteArray.buffer);
 }
@@ -43,7 +57,7 @@ function handleReceive(message) {
   // 受信したRAWデータをcanvasに
   var c = resultCanvas = document.getElementById('result');
   var ctx = c.getContext('2d');
-  var imageData = ctx.createImageData(200, 200);
+  var imageData = ctx.createImageData(200, 160);
   var pixels = imageData.data;
 
   var buffer = new Uint8Array(message.data);
