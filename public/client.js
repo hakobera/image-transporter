@@ -14,13 +14,14 @@ function makeImage(context) {
 }
 
 function bootstrap() {
+  var path = window.location.hostname + ':' + window.location.port;
 
   // 適当な図形を描画
   var c = document.getElementById('mycanvas');
   var ctx = c.getContext('2d');
   ctx.globalalpha = 0.3;
   // Socketの初期化
-  socket = new WebSocket('ws://localhost:8080');
+  socket = new WebSocket('ws://' + path);
   socket.binaryType = 'arraybuffer';
   socket.onopen = function() {
     setInterval(function() {
